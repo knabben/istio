@@ -387,10 +387,7 @@ binaries-test:
 
 # istioctl-all makes all of the non-static istioctl executables for each supported OS
 .PHONY: istioctl-all
-istioctl-all: ${TARGET_OUT}/release/istioctl-linux-amd64 ${TARGET_OUT}/release/istioctl-linux-armv7 ${TARGET_OUT}/release/istioctl-linux-arm64 \
-	${TARGET_OUT}/release/istioctl-osx \
-	${TARGET_OUT}/release/istioctl-osx-arm64 \
-	${TARGET_OUT}/release/istioctl-win.exe
+istioctl-all: ${TARGET_OUT}/release/istioctl-linux-amd64
 
 .PHONY: istioctl.completion
 istioctl.completion: ${TARGET_OUT}/release/istioctl.bash ${TARGET_OUT}/release/_istioctl

@@ -26,6 +26,7 @@ import (
 
 	"istio.io/istio/istioctl/pkg/admin"
 	"istio.io/istio/istioctl/pkg/analyze"
+	"istio.io/istio/istioctl/pkg/apifloripa"
 	"istio.io/istio/istioctl/pkg/authz"
 	"istio.io/istio/istioctl/pkg/checkinject"
 	"istio.io/istio/istioctl/pkg/cli"
@@ -212,6 +213,8 @@ debug and diagnose their Istio mesh.
 	experimentalCmd.AddCommand(proxyconfig.StatsConfigCmd(ctx))
 	experimentalCmd.AddCommand(checkinject.Cmd(ctx))
 	experimentalCmd.AddCommand(waypoint.Cmd(ctx))
+
+	experimentalCmd.AddCommand(apifloripa.Cmd(ctx))
 
 	analyzeCmd := analyze.Analyze(ctx)
 	hideInheritedFlags(analyzeCmd, cli.FlagIstioNamespace)
