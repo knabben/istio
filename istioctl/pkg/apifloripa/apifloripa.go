@@ -16,11 +16,18 @@ package apifloripa
 
 import (
 	"fmt"
+	"github.com/magefile/mage/sh"
 	"github.com/spf13/cobra"
 	"istio.io/istio/istioctl/pkg/cli"
+	"istio.io/istio/operator/cmd/mesh"
 )
 
 var labelPairs string
+
+const (
+	crdGatewayAPI = "github.com/kubernetes-sigs/gateway-api/config/crd/experimental"
+	tmpFile       = "/tmp/kustomize"
+)
 
 func Cmd(ctx cli.Context) *cobra.Command {
 	apiFloripa := &cobra.Command{
@@ -41,6 +48,7 @@ Demonstration setup for 2 API Floripa, this demo contains Kiali, Jaeger and Prom
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
+
 			cmd.HelpFunc()(cmd, args)
 			return nil
 		},
@@ -54,10 +62,16 @@ Demonstration setup for 2 API Floripa, this demo contains Kiali, Jaeger and Prom
   istioctl x apifloripa install
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			_, err := ctx.CLIClient()
-			if err != nil {
-				return fmt.Errorf("failed to create Kubernetes client: %v", err)
+			p := mesh.NewPrinterForWriter(cmd.OutOrStderr())
+			p.Println("--[ Kustomizing Gateway API files...")
+			if err := sh.RunV("kubectl", "kustomize", crdGatewayAPI, "-o", tmpFile); err != nil {
+				return fmt.Errorf("failed to kustomize Gateway API crds: %v", err)
 			}
+			p.Println("\n--[ Apply kustomize Gateway API files...")
+			if err := sh.RunV("kubectl", "apply", "-f", tmpFile); err != nil {
+				return fmt.Errorf("failed to apply gateway api files: %v", err)
+			}
+
 			return nil
 		},
 	}
@@ -73,10 +87,28 @@ Demonstration setup for 2 API Floripa, this demo contains Kiali, Jaeger and Prom
 			if err != nil {
 				return fmt.Errorf("failed to create Kubernetes client: %v", err)
 			}
+
+			return nil
+		},
+	}
+	uninstallApiFloripaCmd := &cobra.Command{
+		Use:   "uninstall",
+		Short: "Uninstall the installed resources",
+		Long:  "Uninstall resources for the DEMO",
+		Example: `  # Check status of the resources
+  istioctl x apifloripa check
+`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			_, err := ctx.CLIClient()
+			if err != nil {
+				return fmt.Errorf("failed to create Kubernetes client: %v", err)
+			}
+
 			return nil
 		},
 	}
 	apiFloripa.AddCommand(installApiFloripaCmd)
+	apiFloripa.AddCommand(uninstallApiFloripaCmd)
 	apiFloripa.AddCommand(checkApiFloripaCmd)
 
 	return apiFloripa
